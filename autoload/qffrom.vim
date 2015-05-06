@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2015/01/30 22:31:06.
+" Last Change: 2015/05/02 22:28:01.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -44,16 +44,25 @@ function! qffrom#start(args) abort
 endfunction
 
 function! qffrom#dir_pattern(cmd, args) abort
-  let dir = '.'
+  let default_dir = qffrom#default_dir(a:cmd)
+  let dir = default_dir
   let pattern = []
   for arg in a:args
-    if isdirectory(expand(arg)) && dir ==# '.' && (len(a:args) != 1 || qffrom#get(a:cmd, 'dironly', 0))
+    if isdirectory(expand(arg)) && dir ==# default_dir && (len(a:args) != 1 || qffrom#get(a:cmd, 'dironly', 0))
       let dir = qffrom#fnameescape(arg)
     else
       call add(pattern, arg)
     endif
   endfor
   return [ dir, qffrom#fnameescape(join(pattern, ' ')) ]
+endfunction
+
+function! qffrom#default_dir(cmd) abort
+  if qffrom#get(a:cmd, 'git_root', 0)
+    return qffrom#git_root()
+  else
+    return '.'
+  endif
 endfunction
 
 function! qffrom#command() abort
@@ -105,6 +114,26 @@ else
     return escape(a:str, " \t\n*?[{`$\\%#'\"|!<")
   endfunction
 endif
+
+function! qffrom#git_root() abort
+  let path = expand('%:p:h')
+  let prev = ''
+  while path !=# prev
+    let dir = path . '/.git'
+    let type = getftype(dir)
+    if type ==# 'dir' && isdirectory(dir.'/objects') && isdirectory(dir.'/refs') && getfsize(dir.'/HEAD') > 10
+      return fnamemodify(dir, ':h')
+    elseif type ==# 'file'
+      let reldir = get(readfile(dir), 0, '')
+      if reldir =~# '^gitdir: '
+        return fnamemodify(simplify(path . '/' . reldir[8:]), ':h')
+      endif
+    endif
+    let prev = path
+    let path = fnamemodify(path, ':h')
+  endwhile
+  return '.'
+endfunction
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
