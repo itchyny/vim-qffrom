@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2015/05/02 22:28:01.
+" Last Change: 2015/05/09 23:57:39.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -39,22 +39,24 @@ function! qffrom#start(args) abort
       call add(args, arg)
     endif
   endfor
-  let [ dir, pattern ] = qffrom#dir_pattern(cmd, args)
-  call qffrom#run(cmd, dir, pattern)
+  let [ dir, hasdir, pattern ] = qffrom#dir_pattern(cmd, args)
+  call qffrom#run(cmd, dir, hasdir, pattern)
 endfunction
 
 function! qffrom#dir_pattern(cmd, args) abort
   let default_dir = qffrom#default_dir(a:cmd)
   let dir = default_dir
+  let hasdir = 0
   let pattern = []
   for arg in a:args
     if isdirectory(expand(arg)) && dir ==# default_dir && (len(a:args) != 1 || qffrom#get(a:cmd, 'dironly', 0))
       let dir = qffrom#fnameescape(arg)
+      let hasdir = 1
     else
       call add(pattern, arg)
     endif
   endfor
-  return [ dir, qffrom#fnameescape(join(pattern, ' ')) ]
+  return [ dir, hasdir, qffrom#fnameescape(join(pattern, ' ')) ]
 endfunction
 
 function! qffrom#default_dir(cmd) abort
@@ -80,13 +82,15 @@ function! qffrom#complete(arglead, cmdline, cursorpos) abort
   return []
 endfunction
 
-function! qffrom#run(cmd, dir, pattern) abort
+function! qffrom#run(cmd, dir, hasdir, pattern) abort
   let errorformat = &errorformat
   try
     execute qffrom#get(a:cmd, 'pre', '')
     let &errorformat = qffrom#get(a:cmd, 'format', errorformat)
     let command = qffrom#get(a:cmd, 'command', &grepprg)
-    let command = substitute(substitute(command, '\c<dir>', a:dir, 'g'), '\$\*', a:pattern, 'g')
+    let command = substitute(command, '\$\*', a:pattern, 'g')
+    let command = substitute(command, '\c<dir>', a:dir, 'g')
+    let command = substitute(command, '\c<hasdir>', a:hasdir ? 'true' : 'false', 'g')
     silent cexpr system(command)
     call qffrom#iconv(a:cmd)
     execute qffrom#get(a:cmd, 'post', '')
