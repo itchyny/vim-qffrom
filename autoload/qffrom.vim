@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2015/09/11 13:11:35.
+" Last Change: 2015/09/12 13:14:13.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -78,7 +78,7 @@ function! qffrom#command() abort
   return commands
 endfunction
 
-function! qffrom#complete(arglead, cmdline, cursorpos) abort
+function! qffrom#complete(...) abort
   return []
 endfunction
 
