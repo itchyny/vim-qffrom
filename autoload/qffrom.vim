@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2015/09/12 13:14:13.
+" Last Change: 2015/09/12 18:15:21.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -31,15 +31,15 @@ function! qffrom#start(args) abort
   let args = []
   let cmd = ''
   let cmds = qffrom#command()
-  for arg in a:args
-    let argcmd = substitute(arg, '\m\c^-\+', '', '')
+  for arg in split(a:args, '\v +\zs')
+    let argcmd = substitute(substitute(arg, '\v +$', '', ''), '\m\c^-\+', '', '')
     if get(cmds, argcmd) && cmd ==# ''
       let cmd = argcmd
     else
       call add(args, arg)
     endif
   endfor
-  let [ dir, hasdir, pattern ] = qffrom#dir_pattern(cmd, args)
+  let [ dir, hasdir, pattern ] = qffrom#dir_pattern(cmd, join(args, ''))
   call qffrom#run(cmd, dir, hasdir, pattern)
 endfunction
 
@@ -48,15 +48,15 @@ function! qffrom#dir_pattern(cmd, args) abort
   let dir = default_dir
   let hasdir = 0
   let pattern = []
-  for arg in a:args
-    if isdirectory(expand(arg)) && dir ==# default_dir && (len(a:args) != 1 || qffrom#get(a:cmd, 'dironly', 0))
-      let dir = qffrom#fnameescape(arg)
+  for arg in split(a:args, '\v +\zs')
+    if isdirectory(expand(substitute(arg, '\v +$', '', ''))) && dir ==# default_dir && (len(a:args) != 1 || qffrom#get(a:cmd, 'dironly', 0))
+      let dir = qffrom#fnameescape(substitute(arg, '\v +$', '', ''))
       let hasdir = 1
     else
       call add(pattern, arg)
     endif
   endfor
-  return [ dir, hasdir, qffrom#string(join(pattern, ' ')) ]
+  return [ dir, hasdir, qffrom#pattern(join(pattern, '')) ]
 endfunction
 
 function! qffrom#default_dir(cmd) abort
@@ -119,12 +119,9 @@ else
   endfunction
 endif
 
-function! qffrom#string(str) abort
-  if a:str =~# '\v^".*"$|^''.*''$'
-    return a:str
-  else
-    return "'" . escape(a:str, "'") . "'"
-  endif
+function! qffrom#pattern(str) abort
+  let str = a:str =~# '\v^".*"$|^''.*''$' ? a:str : "'" . substitute(a:str, "'", ".", 'g') . "'"
+  return escape(substitute(str, '\v(^ +| +$)', '', 'g'), '\&[]')
 endfunction
 
 function! qffrom#git_root() abort
