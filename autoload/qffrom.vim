@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2015/09/12 18:15:21.
+" Last Change: 2015/10/31 14:33:23.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -120,7 +120,7 @@ else
 endif
 
 function! qffrom#pattern(str) abort
-  let str = a:str =~# '\v^".*"$|^''.*''$' ? a:str : "'" . substitute(a:str, "'", ".", 'g') . "'"
+  let str = a:str =~# '\v^".*"$|^''.*''$' ? a:str : "'" . substitute(substitute(a:str, "'", ".", 'g'), '\v^\s+|\s+$', '', 'g') . "'"
   return escape(substitute(str, '\v(^ +| +$)', '', 'g'), '\&[]')
 endfunction
 
