@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2015/10/31 14:33:23.
+" Last Change: 2016/01/18 00:58:51.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -16,7 +16,7 @@ let s:qffrom.grep = {
       \ }
 
 let s:qffrom.find = {
-      \ 'command': 'find <dir> -type f -iname ''$*'' -print',
+      \ 'command': 'find <dir> -type f -iname $* -print',
       \ 'format': '%f',
       \ }
 
