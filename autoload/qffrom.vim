@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2016/03/20 03:10:59.
+" Last Change: 2016/06/14 09:07:39.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -25,6 +25,17 @@ function! qffrom#get(cmd, name, value) abort
   let all = get(get(g:, 'qffrom', {}), '_', {})
   let default = get(get(s:, 'qffrom', {}), a:cmd, {})
   return get(user, a:name, get(all, a:name, get(default, a:name, a:value)))
+endfunction
+
+function! qffrom#loclist(cmd) abort
+  let cmd = qffrom#get(a:cmd, 'post', '')
+  if cmd =~# 'lop\%[en]'
+    return 1
+  elseif cmd =~# 'cope\%[n]'
+    return 0
+  else
+    return qffrom#get(a:cmd, 'loclist', !qffrom#get(a:cmd, 'qflist', 1))
+  endif
 endfunction
 
 function! qffrom#start(args) abort
@@ -96,9 +107,17 @@ function! qffrom#run(cmd, dir, hasdir, pattern) abort
     let command = substitute(command, '\$\*', a:pattern, 'g')
     let command = substitute(command, '\c<dir>', a:dir, 'g')
     let command = substitute(command, '\c<hasdir>', a:hasdir ? 'true' : 'false', 'g')
-    silent cexpr system(command)
+    if qffrom#loclist(a:cmd)
+      silent lexpr system(command)
+    else
+      silent cexpr system(command)
+    endif
     call qffrom#iconv(a:cmd)
-    execute qffrom#get(a:cmd, 'post', '')
+    let cmd = qffrom#get(a:cmd, 'post', '')
+    execute cmd
+    if cmd =~# 'lopen\|copen'
+      let b:qflisttype = cmd =~# 'lopen' ? 'location' : 'quickfix'
+    endif
   finally
     let &errorformat = errorformat
   endtry
@@ -106,11 +125,19 @@ endfunction
 
 function! qffrom#iconv(cmd) abort
   if qffrom#get(a:cmd, 'convert_encoding', &encoding !=# &termencoding) && has('iconv')
-    let qflist = getqflist()
-    for item in qflist
+    if qffrom#loclist(a:cmd)
+      let list = getloclist(0)
+    else
+      let list = getqflist()
+    endif
+    for item in list
       let item.text = iconv(item.text, &termencoding, &encoding)
     endfor
-    call setqflist(qflist)
+    if qffrom#loclist(a:cmd)
+      call setloclist(0, list)
+    else
+      call setqflist(list)
+    endif
   endif
 endfunction
 
