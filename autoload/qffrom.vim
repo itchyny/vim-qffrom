@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2016/06/14 09:07:39.
+" Last Change: 2017/03/13 18:06:33.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -59,13 +59,14 @@ function! qffrom#dir_pattern(cmd, args) abort
   let dir = default_dir
   let hasdir = 0
   let pattern = []
-  for arg in split(a:args, '\v +\zs')
+  let args = split(a:args, '\v +\zs')
+  for arg in args
     try
       let expanded = expand(substitute(arg, '\v +$', '', ''))
     catch
       let expanded = ''
     endtry
-    if isdirectory(expanded) && dir ==# default_dir && (len(a:args) != 1 || qffrom#get(a:cmd, 'dironly', 0))
+    if isdirectory(expanded) && dir ==# default_dir && (len(args) > 1 || qffrom#get(a:cmd, 'dironly', 0))
       let dir = qffrom#fnameescape(substitute(arg, '\v +$', '', ''))
       let hasdir = 1
     else
