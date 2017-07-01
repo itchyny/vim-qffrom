@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2017/03/13 18:06:33.
+" Last Change: 2017/07/01 10:12:30.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -28,14 +28,7 @@ function! qffrom#get(cmd, name, value) abort
 endfunction
 
 function! qffrom#loclist(cmd) abort
-  let cmd = qffrom#get(a:cmd, 'post', '')
-  if cmd =~# 'lop\%[en]'
-    return 1
-  elseif cmd =~# 'cope\%[n]'
-    return 0
-  else
-    return qffrom#get(a:cmd, 'loclist', !qffrom#get(a:cmd, 'qflist', 1))
-  endif
+  return qffrom#get(a:cmd, 'loclist', !qffrom#get(a:cmd, 'qflist', 1))
 endfunction
 
 function! qffrom#start(args) abort
@@ -114,11 +107,6 @@ function! qffrom#run(cmd, dir, hasdir, pattern) abort
       silent cexpr system(command)
     endif
     call qffrom#iconv(a:cmd)
-    let cmd = qffrom#get(a:cmd, 'post', '')
-    execute cmd
-    if cmd =~# 'lopen\|copen'
-      let b:qflisttype = cmd =~# 'lopen' ? 'location' : 'quickfix'
-    endif
   finally
     let &errorformat = errorformat
   endtry
