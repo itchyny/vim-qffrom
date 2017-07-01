@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2017/07/01 10:12:30.
+" Last Change: 2017/07/01 10:13:48.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -95,7 +95,6 @@ endfunction
 function! qffrom#run(cmd, dir, hasdir, pattern) abort
   let errorformat = &errorformat
   try
-    execute qffrom#get(a:cmd, 'pre', '')
     let &errorformat = qffrom#get(a:cmd, 'format', errorformat)
     let command = qffrom#get(a:cmd, 'command', &grepprg)
     let command = substitute(command, '\$\*', a:pattern, 'g')
