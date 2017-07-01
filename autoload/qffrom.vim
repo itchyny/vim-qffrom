@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2017/07/01 10:13:48.
+" Last Change: 2017/07/01 10:20:37.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -105,28 +105,9 @@ function! qffrom#run(cmd, dir, hasdir, pattern) abort
     else
       silent cexpr system(command)
     endif
-    call qffrom#iconv(a:cmd)
   finally
     let &errorformat = errorformat
   endtry
-endfunction
-
-function! qffrom#iconv(cmd) abort
-  if qffrom#get(a:cmd, 'convert_encoding', &encoding !=# &termencoding) && has('iconv')
-    if qffrom#loclist(a:cmd)
-      let list = getloclist(0)
-    else
-      let list = getqflist()
-    endif
-    for item in list
-      let item.text = iconv(item.text, &termencoding, &encoding)
-    endfor
-    if qffrom#loclist(a:cmd)
-      call setloclist(0, list)
-    else
-      call setqflist(list)
-    endif
-  endif
 endfunction
 
 if exists('*fnameescape')
