@@ -2,7 +2,7 @@
 " Filename: autoload/qffrom.vim
 " Author: itchyny
 " License: MIT License
-" Last Change: 2017/07/01 10:20:37.
+" Last Change: 2020/10/30 12:01:15.
 " =============================================================================
 
 let s:save_cpo = &cpo
@@ -66,7 +66,7 @@ function! qffrom#dir_pattern(cmd, args) abort
       call add(pattern, arg)
     endif
   endfor
-  return [ dir, hasdir, qffrom#pattern(join(pattern, '')) ]
+  return [ dir, hasdir, empty(pattern) ? '' : qffrom#pattern(join(pattern, '')) ]
 endfunction
 
 function! qffrom#default_dir(cmd) abort
